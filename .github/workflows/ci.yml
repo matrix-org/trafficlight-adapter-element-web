@@ -4,8 +4,8 @@ on:
   push:
     branches: [ main ]
 jobs:
-  ts_lint:
-    name: "Typescript Syntax Check"
+  lint:
+    name: "Lint"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -13,41 +13,15 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           cache: 'yarn'
+      
+      - name: Install Deps
+        run: "yarn install"
 
       - name: Typecheck
         run: "yarn run lint:types"
 
-  js_lint:
-    name: "ESLint"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v3
-        with:
-          cache: 'yarn'
-
-      - name: Install Deps
-        run: "yarn install"
-
-      - name: Run Linter
+      - name: Run JS Linter
         run: "yarn run lint:js"
-
-  style_lint:
-    name: "Style Lint"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v3
-        with:
-          cache: 'yarn'
-
-      - name: Install Deps
-        run: "yarn install"
-
-      - name: Run Linter
-        run: "yarn run lint:style"
 
   build:
     name: Build Docker Image
@@ -56,9 +30,7 @@ jobs:
       contents: read
       packages: write
     needs:
-       - style_lint
-       - js_lint
-       - ts_lint
+       - lint
     steps:
        - name: Checkout clean copy
          uses: actions/checkout@v3
