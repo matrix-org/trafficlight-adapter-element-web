@@ -28,7 +28,7 @@
     "lint": "yarn lint:types && yarn lint:js",
     "lint:js": "eslint --max-warnings 0 cypress src",
     "lint:js-fix": "eslint --fix src cypress",
-    "lint:types": "tsc --noEmit --jsx react -p src && tsc --noEmit --jsx react -p cypress",
+    "lint:types": "tsc --noEmit",
     "test:trafficlight": "tsc && node bin/trafficlight.js run",
     "test:trafficlight:open": "tsc && node bin/trafficlight.js open",
     "test:trafficlight:once": "tsc && node bin/trafficlight.js once"
