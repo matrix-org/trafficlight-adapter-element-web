@@ -1,0 +1,81 @@
+name: Linting and Tests
+on:
+  pull_request: { }
+  push:
+    branches: [ main ]
+jobs:
+  ts_lint:
+    name: "Typescript Syntax Check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v3
+        with:
+          cache: 'yarn'
+
+      - name: Typecheck
+        run: "yarn run lint:types"
+
+  js_lint:
+    name: "ESLint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v3
+        with:
+          cache: 'yarn'
+
+      - name: Install Deps
+        run: "yarn install"
+
+      - name: Run Linter
+        run: "yarn run lint:js"
+
+  style_lint:
+    name: "Style Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v3
+        with:
+          cache: 'yarn'
+
+      - name: Install Deps
+        run: "yarn install"
+
+      - name: Run Linter
+        run: "yarn run lint:style"
+
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    needs: style_lint,js_lint,ts_lint
+    steps:
+       - name: Checkout clean copy
+         uses: actions/checkout@v3
+       - name: Login to registry
+         uses: docker/login-action@v1
+         with:
+           registry: ghcr.io
+           username: ${{ github.actor }}
+           password: ${{ secrets.GITHUB_TOKEN }}
+       - name: Work out labels
+         id: meta
+         uses: docker/metadata-action@v1
+         with: 
+           images: ghcr.io/${{ github.repository }}
+
+       - name: Build and push docker image
+         uses: docker/build-push-action@v2
+         with:
+           context: .
+           push: true
+           tags: ${{ steps.meta.outputs.tags }}
+           labels: ${{ steps.meta.outputs.labels }}
+
