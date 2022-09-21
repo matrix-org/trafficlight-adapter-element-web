@@ -6,7 +6,7 @@ COPY . /app
 
 
 RUN yarn install
-
+RUN yarn cypress install
 RUN yarn tsc 
 
 ENV CYPRESS_BASE_URL "https://app.element.io"
