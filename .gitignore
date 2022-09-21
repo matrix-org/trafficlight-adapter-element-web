@@ -1,0 +1,6 @@
+/node_modules
+/bin
+/cypress/videos
+/cypress/downloads
+/cypress/screenshots
+/cypress/performance

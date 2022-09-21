@@ -1,0 +1,60 @@
+{
+  "name": "trafficlight-adapter-element-web",
+  "version": "0.0.1",
+  "description": "Trafficlight adapter for element-web",
+  "author": "matrix.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/matrix-org/trafficlight-adapter-element-web"
+  },
+  "license": "Apache-2.0",
+  "files": [
+    "lib",
+    "res",
+    "src",
+    "scripts",
+    "git-revision.txt",
+    "docs",
+    "header",
+    "CHANGELOG.md",
+    "CONTRIBUTING.rst",
+    "LICENSE",
+    "README.md",
+    "package.json",
+    ".stylelintrc.js"
+  ],
+  "main": "./src/trafficlight.ts",
+  "scripts": {
+    "lint": "yarn lint:types && yarn lint:js",
+    "lint:js": "eslint --max-warnings 0 cypress src",
+    "lint:js-fix": "eslint --fix src cypress",
+    "lint:types": "tsc --noEmit --jsx react -p src && tsc --noEmit --jsx react -p cypress",
+    "test:trafficlight": "tsc && node bin/trafficlight.js run",
+    "test:trafficlight:open": "tsc && node bin/trafficlight.js open",
+    "test:trafficlight:once": "tsc && node bin/trafficlight.js once"
+  },
+  "dependencies": {
+    "cypress": "^10.3.0",
+    "cypress-axe": "^1.0.0",
+    "cypress-real-events": "^1.7.1",
+    "node-fetch": "2.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.22",
+    "@types/node-fetch": "^2.6.2",
+    "@typescript-eslint/eslint-plugin": "^5.35.1",
+    "@typescript-eslint/parser": "^5.6.0",
+    "eslint": "8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-deprecate": "^0.7.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-matrix-org": "^0.6.1",
+    "eslint-plugin-react": "^7.28.0",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "typescript": "^4.7.4"
+  },
+  "resolutions": {
+    "@types/react": "17.0.14"
+  }
+}
