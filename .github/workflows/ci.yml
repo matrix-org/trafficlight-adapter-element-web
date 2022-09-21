@@ -55,7 +55,10 @@ jobs:
     permissions:
       contents: read
       packages: write
-    needs: style_lint,js_lint,ts_lint
+    needs:
+       - style_lint
+       - js_lint
+       - ts_lint
     steps:
        - name: Checkout clean copy
          uses: actions/checkout@v3
