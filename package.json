@@ -34,6 +34,7 @@
     "test:trafficlight:once": "tsc && node bin/trafficlight.js once"
   },
   "dependencies": {
+    "@babel/eslint-plugin": "^7.19.1",
     "cypress": "^10.3.0",
     "cypress-axe": "^1.0.0",
     "cypress-real-events": "^1.7.1",
