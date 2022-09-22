@@ -45,7 +45,7 @@ async function runCypress(trafficlightUrl: string, uuid: string): Promise<boolea
         // @ts-ignore-next-line
         exit: true,
         quiet: false,
-        browser: 'chromium',
+        browser: 'chrome',
         spec: './cypress/e2e/trafficlight/trafficlight.spec.ts',
         env: {
             'TRAFFICLIGHT_URL': trafficlightUrl,

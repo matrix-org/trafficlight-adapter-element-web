@@ -1,15 +1,13 @@
-FROM node:16
+FROM cypress/browsers:node16.16.0-chrome105-ff99-edge
+
 
 WORKDIR /app
-
 COPY . /app
 
-
 RUN yarn install
-RUN yarn cypress install
-RUN yarn tsc 
+RUN yarn tsc
 
 ENV CYPRESS_BASE_URL "https://app.element.io"
 
-ENTRYPOINT ["node","bin/trafficlight.js","run"]
+CMD ["node","bin/trafficlight.js","run"]
 
