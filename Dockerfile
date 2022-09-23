@@ -1,13 +1,15 @@
-FROM cypress/base:16
+FROM cypress/browsers
+
+RUN chmod 775 /root
 
 WORKDIR /app
-COPY . /app
 
+COPY . /app
 RUN yarn install
 RUN yarn tsc
 RUN yarn cypress install
-RUN chmod -R o+rwx /root/.cache/
-RUN ln -s /root/.cache /.cache
+
 ENV CYPRESS_BASE_URL "https://app.element.io"
-CMD ["node","bin/trafficlight.js","run"]
+ENV CYPRESS_CACHE_FOLDER "/root/.cache/Cypress"
+CMD ["node","/app/bin/trafficlight.js","run"]
 
