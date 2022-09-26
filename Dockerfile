@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY . /app
 RUN mkdir -p /app/cypress/videos
-RUN chown 775 /app/cypress/ /app/cypress/videos 
+RUN chown 777 /app/cypress/ /app/cypress/videos 
 
 RUN yarn install
 RUN yarn tsc
