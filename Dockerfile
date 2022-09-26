@@ -4,7 +4,7 @@ FROM cypress/browsers
 WORKDIR /app
 
 COPY . /app
-RUN chown 777 /app/ /app/cypress/ /app/cypress 
+RUN chmod 775 /app/ /app/cypress/ /app/cypress 
 
 RUN yarn install
 RUN yarn tsc
