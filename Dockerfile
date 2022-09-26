@@ -4,8 +4,7 @@ FROM cypress/browsers
 WORKDIR /app
 
 COPY . /app
-RUN mkdir -p /app/cypress/videos
-RUN chown 777 /app/cypress/ /app/cypress/videos 
+RUN chown 777 /app/ /app/cypress/ /app/cypress 
 
 RUN yarn install
 RUN yarn tsc
