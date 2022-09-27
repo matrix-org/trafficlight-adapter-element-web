@@ -124,6 +124,7 @@ async function runCypress(trafficlightUrl: string, uuid: string): Promise<boolea
     // @ts-ignore-next-line
     if (result.totalFailed !== 0) {
         console.error('Some assertion failed, probably mentioned above');
+        await reportError(trafficlightUrl, uuid, "unknown", result.runs[0].tests[0].displayError);
         return false;
     } else {
         return true;
