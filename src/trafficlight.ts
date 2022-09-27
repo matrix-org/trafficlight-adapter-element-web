@@ -72,15 +72,15 @@ async function uploadFile(trafficlightUrl: string, uuid: string, filename: strin
 
     const formData = new FormData();
     const filestream = fs.createReadStream(filename);
-    formData.append('file', filestream, { contentType: 'application/binary', filename: filename });
+    formData.append('file', filestream, { contentType: 'application/octet-stream', filename: filename });
 
     const target = `${trafficlightUrl}/client/${uuid}/upload`;
-    const promise = fetch(target, { method: 'POST', body: formData, headers: { 'Content-Type': 'multipart/mixed' } })
+    const promise = fetch(target, { method: 'POST', body: formData })
         .then((response) => {
             if (response.status != 200) {
                 console.log(`Failed to upload file  ${filename}`);
             } else {
-                console.log(`Reported error`);
+                console.log(`Uploaded file`);
             }
         });
     return promise;
