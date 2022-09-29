@@ -17,9 +17,12 @@ limitations under the License.
 /* eslint no-constant-condition: [ "error", { "checkLoops": false } ], prefer-template: 1 */
 
 import fetch from 'node-fetch';
+import FormData from 'form-data';
+import fs from 'fs';
 import cypress from 'cypress';
 import * as crypto from 'crypto';
 import * as process from 'process';
+
 function registerClient(trafficlightUrl: string, uuid: string) {
     console.log('Registering trafficlight client');
 
@@ -34,6 +37,50 @@ function registerClient(trafficlightUrl: string, uuid: string) {
                 throw new Error(`Unable to register client, got ${ response.status } from server`);
             } else {
                 console.log(`Registered to trafficlight as ${uuid}`);
+            }
+        });
+    return promise;
+}
+
+function reportError(trafficlightUrl: string, uuid: string, path: string, details: string) {
+    console.log('Reporting error in client');
+
+    const data = JSON.stringify({
+        error: {
+            type: "unknown",
+            path: path,
+            details: details,
+        },
+    });
+    const target = `${trafficlightUrl}/client/${uuid}/error`;
+    const promise = fetch(target, { method: 'POST', body: data, headers: { 'Content-Type': 'application/json' } })
+        .then((response) => {
+            if (response.status != 200) {
+                console.log(`Failed to report error ${data}`);
+            } else {
+                console.log(`Reported error`);
+            }
+        });
+    return promise;
+}
+
+async function uploadVideo(trafficlightUrl: string, uuid: string) {
+    return uploadFile(trafficlightUrl, uuid, `cypress/videos/trafficlight/${uuid}/trafficlight.spec.ts.mp4`);
+}
+async function uploadFile(trafficlightUrl: string, uuid: string, filename: string) {
+    console.log('Uploading file from client');
+
+    const formData = new FormData();
+    const filestream = fs.createReadStream(filename);
+    formData.append('file', filestream, { contentType: 'application/octet-stream', filename: filename });
+
+    const target = `${trafficlightUrl}/client/${uuid}/upload`;
+    const promise = fetch(target, { method: 'POST', body: formData })
+        .then((response) => {
+            if (response.status != 200) {
+                console.log(`Failed to upload file  ${filename}`);
+            } else {
+                console.log(`Uploaded file`);
             }
         });
     return promise;
@@ -68,11 +115,16 @@ async function runCypress(trafficlightUrl: string, uuid: string): Promise<boolea
         result = await cypress.run(cypressOptions);
     } catch (err) {
         console.error('Could not execute tests:', err);
+        await reportError(trafficlightUrl, uuid, "unknown", err.stack);
         return false;
+    } finally {
+        await uploadVideo(trafficlightUrl, uuid);
     }
+
     // @ts-ignore-next-line
     if (result.totalFailed !== 0) {
         console.error('Some assertion failed, probably mentioned above');
+        await reportError(trafficlightUrl, uuid, "unknown", result.runs[0].tests[0].displayError);
         return false;
     } else {
         return true;
