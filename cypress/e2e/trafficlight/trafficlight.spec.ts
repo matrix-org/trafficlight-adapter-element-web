@@ -159,6 +159,19 @@ function runAction(action: string, data: JSONValue): string | undefined {
         case "verify_message_in_timeline":
             cy.contains(data["message"]);
             return "verified";
+        case 'wait': {
+            const time = data["time"]? parseInt(data["time"], 10): 5000;
+            cy.wait(time);
+            return "wait_over";
+        }
+        case "verify_last_message_is_utd":
+            // verifies that the last tile is an UTD
+            cy.get(".mx_EventTile").then((elements) => {
+                const lastEventTile = Array.isArray(elements) ? elements[elements.length - 1] : elements;
+                cy.get(".mx_UnknownBody", { withinSubject: lastEventTile });
+            });
+            cy.get(".mx_UnknownBody");
+            return "verified";
         case 'exit':
             cy.log('Client asked to exit, test complete or server teardown');
             return;
