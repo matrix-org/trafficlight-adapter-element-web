@@ -38,6 +38,7 @@
     "cypress": "^10.3.0",
     "cypress-axe": "^1.0.0",
     "cypress-real-events": "^1.7.1",
+    "cypress-terminal-report": "^4.1.2",
     "node-fetch": "2.6.1"
   },
   "devDependencies": {
