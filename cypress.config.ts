@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import { defineConfig } from 'cypress';
+import installLogsPrinter from "cypress-terminal-report/src/installLogsPrinter";
 
 export default defineConfig({
     videoUploadOnPasses: false,
@@ -22,9 +23,19 @@ export default defineConfig({
     defaultCommandTimeout: 10000,
     chromeWebSecurity: false,
     e2e: {
-        supportFile: false,
         baseUrl: 'https://develop.element.io/',
         experimentalSessionAndOrigin: true,
         specPattern: 'cypress/e2e/**/*.{js,jsx,ts,tsx}',
+        setupNodeEvents(on, config) {
+            console.log("Installing logs printer");
+            installLogsPrinter(on, {
+                outputRoot: `cypress/logs/trafficlight/${config.env['TRAFFICLIGHT_UUID']}/`,
+                outputTarget: {
+                    'out.txt': 'txt',
+                },
+                printLogsToFile: 'always',
+            });
+        },
+
     },
 });

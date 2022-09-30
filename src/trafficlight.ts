@@ -118,6 +118,7 @@ async function runCypress(trafficlightUrl: string, uuid: string): Promise<boolea
         await reportError(trafficlightUrl, uuid, "unknown", err.stack);
         return false;
     } finally {
+        await uploadFile(trafficlightUrl, uuid, `cypress/logs/trafficlight/${uuid}/out.txt`);
         await uploadVideo(trafficlightUrl, uuid);
     }
 
