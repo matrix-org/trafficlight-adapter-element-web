@@ -22,7 +22,6 @@ import fs from 'fs';
 import cypress from 'cypress';
 import * as crypto from 'crypto';
 import * as process from 'process';
-import installLogsPrinter from "cypress-terminal-report/src/installLogsPrinter";
 
 function registerClient(trafficlightUrl: string, uuid: string) {
     console.log('Registering trafficlight client');
@@ -107,15 +106,6 @@ async function runCypress(trafficlightUrl: string, uuid: string): Promise<boolea
             },
             e2e: {
                 excludeSpecPattern: [],
-                setupNodeEvents(on, config) {
-                    installLogsPrinter(on, {
-                        outputRoot: `cypress/logs/trafficlight/${uuid}/`,
-                        outputTarget: {
-                            'out.txt': 'txt',
-                        },
-                        printLogsToFile: 'always',
-                    });
-                },
             },
             videosFolder: `cypress/videos/trafficlight/${uuid}/`,
         },
@@ -128,7 +118,7 @@ async function runCypress(trafficlightUrl: string, uuid: string): Promise<boolea
         await reportError(trafficlightUrl, uuid, "unknown", err.stack);
         return false;
     } finally {
-        await uploadFile(trafficlightUrl, uuid, "cypress/logs/trafficlight/${uuid}/out.txt");
+        await uploadFile(trafficlightUrl, uuid, `cypress/logs/trafficlight/${uuid}/out.txt`);
         await uploadVideo(trafficlightUrl, uuid);
     }
 

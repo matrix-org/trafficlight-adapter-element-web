@@ -15,5 +15,5 @@ limitations under the License.
 */
 
 import installLogsCollector from 'cypress-terminal-report/src/installLogsCollector';
-
+console.log("Installing logs collector");
 installLogsCollector();

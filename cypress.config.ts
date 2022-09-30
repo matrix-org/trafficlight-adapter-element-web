@@ -27,13 +27,15 @@ export default defineConfig({
         experimentalSessionAndOrigin: true,
         specPattern: 'cypress/e2e/**/*.{js,jsx,ts,tsx}',
         setupNodeEvents(on, config) {
+            console.log("Installing logs printer");
             installLogsPrinter(on, {
-                outputRoot: config.projectRoot + '/logs/',
+                outputRoot: `cypress/logs/trafficlight/${config.env['TRAFFICLIGHT_UUID']}/`,
                 outputTarget: {
                     'out.txt': 'txt',
                 },
                 printLogsToFile: 'always',
-	    });
-        }.
+            });
+        },
+
     },
 });
