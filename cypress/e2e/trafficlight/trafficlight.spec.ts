@@ -68,7 +68,7 @@ function runAction(action: string, data: JSONValue): string | undefined {
     switch (action) {
         case 'register':
             cy.request(`${data['homeserver_url']['local']}/_matrix/client/versions`).then((response) => {
-                cy.log(response.headers);
+                cy.log(JSON.stringify(response.headers));
             });
             cy.visit('/#/register');
             cy.get('.mx_ServerPicker_change', { timeout: 15000 }).click();
