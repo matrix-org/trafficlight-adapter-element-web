@@ -67,6 +67,9 @@ function recurse() {
 function runAction(action: string, data: JSONValue): string | undefined {
     switch (action) {
         case 'register':
+            cy.request(data['homeserver_url']['local']).then((response) => {
+                cy.log(response.status);
+            });
             cy.visit('/#/register');
             cy.get('.mx_ServerPicker_change', { timeout: 15000 }).click();
             cy.get('.mx_ServerPickerDialog_continue').should('be.visible');
