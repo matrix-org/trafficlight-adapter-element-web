@@ -14,6 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Collect logs and save to disk for upload to trafficlight
 import installLogsCollector from 'cypress-terminal-report/src/installLogsCollector';
 console.log("Installing logs collector");
 installLogsCollector();
+
+// Don't fail on uncaught exceptions, continue to run (like a client would)
+Cypress.on('uncaught:exception', (err, runnable) => {
+    // returning false here prevents Cypress from
+    // failing the test
+    return false;
+});
+
