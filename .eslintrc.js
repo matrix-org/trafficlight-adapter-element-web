@@ -16,7 +16,6 @@ module.exports = {
         "no-async-promise-executor": "off",
         "quotes": "off",
         "no-extra-boolean-cast": "off",
-
         "matrix-org/require-copyright-header": "error",
     },
     overrides: [
@@ -53,6 +52,8 @@ module.exports = {
                 // The non-TypeScript rule produces false positives
                 "func-call-spacing": "off",
                 "@typescript-eslint/func-call-spacing": ["error"],
+
+                "@typescript-eslint/no-namespace": "off",
             },
         },
     ],
