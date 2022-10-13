@@ -25,6 +25,10 @@ type JSONValue =
     | { [x: string]: JSONValue }
     | Array<JSONValue>;
 
+Cypress.on('uncaught:exception', (err, runnable) => {
+    return false;
+});
+
 describe('traffic light client', () => {
     it('runs a trafficlight client once', () => {
         recurse();
