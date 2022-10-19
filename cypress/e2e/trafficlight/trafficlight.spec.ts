@@ -25,6 +25,10 @@ type JSONValue =
     | { [x: string]: JSONValue }
     | Array<JSONValue>;
 
+Cypress.on('uncaught:exception', (err, runnable) => {
+    return false;
+});
+
 describe('traffic light client', () => {
     it('runs a trafficlight client once', () => {
         recurse();
@@ -172,6 +176,22 @@ function runAction(action: string, data: JSONValue): string | undefined {
             });
             cy.get(".mx_UnknownBody");
             return "verified";
+        case "clear_idb_storage":
+            cy.window().then((window) => {
+                return window.indexedDB.databases().then(databases => {
+                    const databaseNames: string[] = databases
+                        .map((db) => db.name)
+                        .filter((name) => name !== undefined) as string[];
+                    for (const name of databaseNames) {
+                        cy.log("Deleting indexedDb database", name);
+                        window.indexedDB.deleteDatabase(name);
+                    }
+                });
+            });
+            return "storage_cleared";
+        case "reload":
+            cy.reload();
+            return "reloaded";
         case 'exit':
             cy.log('Client asked to exit, test complete or server teardown');
             return;
