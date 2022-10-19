@@ -169,7 +169,10 @@ function runAction(action: string, data: JSONValue): string | undefined {
             cy.get(".mx_SecureBackupPanel_buttonRow").contains("Set up").click();
             cy.get(".mx_CreateSecretStorageDialog_optionIcon_securePhrase").click();
             cy.get("[data-test-id='dialog-primary-button']").click();
-            const password = "helloworld123helloworld";
+            const password = data["key_backup_passphrase"];
+            if (!password) {
+                throw new Error("'key_backup_passphrase' not in data for action 'enable_dehydrated_device'");
+            }
             cy.get(".mx_CreateSecretStorageDialog_passPhraseContainer input[type='password']").type(password);
             cy.get("[data-test-id='dialog-primary-button']").click();
             // confirm the password again
