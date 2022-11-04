@@ -121,7 +121,10 @@ function runAction(action: string, data: JSONValue): string | undefined {
             return "logged_out";
         }
         case 'start_crosssign':
-            cy.get('.mx_CompleteSecurity_actionRow > .mx_AccessibleButton').click();
+            cy.gotoAllSettings();
+            cy.get("[data-testid='settings-tab-USER_SECURITY_TAB']").click();
+            cy.contains("Verify").first().click();
+            cy.contains("Verify with another device").click();
             return 'started_crosssign';
         case 'accept_crosssign':
             // Can we please tag some buttons :)
