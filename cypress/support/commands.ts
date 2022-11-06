@@ -13,8 +13,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+/// <reference types="cypress" />
 
-import "./commands";
-import installLogsCollector from 'cypress-terminal-report/src/installLogsCollector';
-console.log("Installing logs collector");
-installLogsCollector();
+Cypress.Commands.addAll({
+    gotoAllSettings() {
+        cy.get(".mx_UserMenu_userAvatar").click();
+        cy.get(".mx_IconizedContextMenu_optionList").contains("All settings").click();
+    },
+});
+
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      /**
+       * Custom command to go to All Settings view in element web.
+       */
+        gotoAllSettings(): Chainable<Element>;
+    }
+  }
+}
+
+export { };

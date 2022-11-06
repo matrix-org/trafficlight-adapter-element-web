@@ -90,14 +90,26 @@ function runAction(action: string, data: JSONValue): string | undefined {
             cy.visit('/#/login');
             cy.get('#mx_LoginForm_username', { timeout: 15000 }).should('be.visible');
             cy.get('.mx_ServerPicker_change').click();
-            cy.get('.mx_ServerPickerDialog_otherHomeserver').type(data['homeserver_url']['local']);
+            cy.get('.mx_ServerPickerDialog_otherHomeserver').clear().type(data['homeserver_url']['local']);
             cy.get('.mx_ServerPickerDialog_continue').click();
             // wait for the dialog to go away
             cy.get('.mx_ServerPickerDialog').should('not.exist');
             cy.get('#mx_LoginForm_username').type(data['username']);
             cy.get('#mx_LoginForm_password').type(data['password']);
             cy.get('.mx_Login_submit').click();
+            // Try to restore from key backup if needed
+            if (data["key_backup_passphrase"]) {
+                cy.get(".mx_CompleteSecurity_actionRow .mx_AccessibleButton_kind_primary").click();
+                cy.get("#mx_passPhraseInput").clear().type(data["key_backup_passphrase"]);
+                cy.get(".mx_AccessSecretStorageDialog_primaryContainer [data-test-id='dialog-primary-button']").click();
+                cy.get(".mx_CompleteSecurity_actionRow .mx_AccessibleButton_kind_primary").click();
+            }
             return 'loggedin';
+        case "logout": {
+            cy.get(".mx_UserMenu_userAvatar").click();
+            cy.get(".mx_ContextualMenu").contains("Sign out").click();
+            return "logged_out";
+        }
         case 'start_crosssign':
             cy.get('.mx_CompleteSecurity_actionRow > .mx_AccessibleButton').click();
             return 'started_crosssign';
@@ -146,6 +158,33 @@ function runAction(action: string, data: JSONValue): string | undefined {
             cy.get(".mx_Dialog_cancelButton").click();
             cy.get("[data-test-id=base-card-close-button]").click();
             return "changed";
+        case "enable_dehydrated_device": {
+            cy.gotoAllSettings();
+            cy.get("[data-testid='settings-tab-USER_LABS_TAB']").click();
+            cy.get("[aria-label='Offline encrypted messaging using dehydrated devices']").click();
+            cy.get(".mx_Dialog_cancelButton").click();
+
+            cy.gotoAllSettings();
+            cy.get("[data-testid='settings-tab-USER_SECURITY_TAB']").click();
+            cy.get(".mx_SecureBackupPanel_buttonRow").contains("Set up").click();
+            cy.get(".mx_CreateSecretStorageDialog_optionIcon_securePhrase").click();
+            cy.get("[data-test-id='dialog-primary-button']").click();
+            const password = data["key_backup_passphrase"];
+            if (!password) {
+                throw new Error("'key_backup_passphrase' not in data for action 'enable_dehydrated_device'");
+            }
+            cy.get(".mx_CreateSecretStorageDialog_passPhraseContainer input[type='password']").type(password);
+            cy.get("[data-test-id='dialog-primary-button']").click();
+            // confirm the password again
+            cy.get(".mx_CreateSecretStorageDialog_passPhraseContainer input[type='password']").type(password);
+            cy.get("[data-test-id='dialog-primary-button']").click();
+            // Continue to next screen
+            cy.get("[data-test-id='dialog-primary-button']").click();
+            // Classic flakiness fix
+            cy.wait(500);
+            cy.get(".mx_CreateSecretStorageDialog").contains("Continue").click();
+            return "enabled_dehydrated_device";
+        }
         case "invite_user": {
             cy.get(".mx_RightPanel_roomSummaryButton").click();
             cy.get(".mx_RoomSummaryCard_icon_people").click();
@@ -155,6 +194,10 @@ function runAction(action: string, data: JSONValue): string | undefined {
                 .type("{enter}");
             cy.get(".mx_InviteDialog_goButton").click();
             return "invited";
+        }
+        case "open-room": {
+            cy.get(".mx_RoomSublist_tiles").contains(data["name"]).click();
+            return "room-opened";
         }
         case "accept_invite":
             cy.get(".mx_RoomTile").click();
@@ -167,6 +210,10 @@ function runAction(action: string, data: JSONValue): string | undefined {
             const time = data["time"]? parseInt(data["time"], 10): 5000;
             cy.wait(time);
             return "wait_over";
+        }
+        case "advance_clock": {
+            cy.clock().tick(data["milliseconds"]);
+            return "advanced_clock";
         }
         case "verify_last_message_is_utd":
             // verifies that the last tile is an UTD
