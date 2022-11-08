@@ -103,6 +103,11 @@ function runAction(action: string, data: JSONValue): string | undefined {
                 cy.get("#mx_passPhraseInput").clear().type(data["key_backup_passphrase"]);
                 cy.get(".mx_AccessSecretStorageDialog_primaryContainer [data-test-id='dialog-primary-button']").click();
                 cy.get(".mx_CompleteSecurity_actionRow .mx_AccessibleButton_kind_primary").click();
+            } else {
+                cy.wait(2000).then(() => {
+                    Cypress.$(".mx_CompleteSecurity_skip")?.first()?.trigger("click");
+                    Cypress.$(".mx_AccessibleButton_kind_danger_outline")?.first()?.trigger("click");
+                });
             }
             return 'loggedin';
         case "logout": {
