@@ -107,7 +107,12 @@ function runAction(action: string, data: JSONValue): string | undefined {
             return 'loggedin';
         case "logout": {
             cy.get(".mx_UserMenu_userAvatar").click();
-            cy.get(".mx_ContextualMenu").contains("Sign out").click();
+            cy.get(".mx_ContextualMenu").contains("Sign out").click().wait(100).then(() => {
+                Cypress.$(".mx_QuestionDialog")
+                    .find("[data-test-id='dialog-primary-button']")
+                    ?.first()
+                    ?.trigger("click");
+            });
             return "logged_out";
         }
         case 'start_crosssign':
@@ -163,7 +168,10 @@ function runAction(action: string, data: JSONValue): string | undefined {
             cy.get("[data-testid='settings-tab-USER_LABS_TAB']").click();
             cy.get("[aria-label='Offline encrypted messaging using dehydrated devices']").click();
             cy.get(".mx_Dialog_cancelButton").click();
-
+            runAction("enable_key_backup", data);
+            return "enabled_dehydrated_device";
+        }
+        case "enable_key_backup": {
             cy.gotoAllSettings();
             cy.get("[data-testid='settings-tab-USER_SECURITY_TAB']").click();
             cy.get(".mx_SecureBackupPanel_buttonRow").contains("Set up").click();
@@ -183,7 +191,7 @@ function runAction(action: string, data: JSONValue): string | undefined {
             // Classic flakiness fix
             cy.wait(500);
             cy.get(".mx_CreateSecretStorageDialog").contains("Continue").click();
-            return "enabled_dehydrated_device";
+            return "key_backup_enabled";
         }
         case "invite_user": {
             cy.get(".mx_RightPanel_roomSummaryButton").click();
@@ -223,6 +231,12 @@ function runAction(action: string, data: JSONValue): string | undefined {
             });
             cy.get(".mx_UnknownBody");
             return "verified";
+        case "verify_last_message_is_trusted": {
+            cy.get(".mx_EventTile")
+                .last()
+                .find(".mx_EventTile_e2eIcon").should("not.exist");
+            return "verified";
+        }
         case "clear_idb_storage":
             cy.window().then((window) => {
                 return window.indexedDB.databases().then(databases => {
