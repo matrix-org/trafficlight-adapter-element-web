@@ -99,12 +99,14 @@ function runAction(action: string, data: JSONValue): string | undefined {
             cy.get('.mx_Login_submit').click();
             // Try to restore from key backup if needed
             if (data["key_backup_passphrase"]) {
+                cy.log("Restoring from keybackup ...");
                 cy.get(".mx_CompleteSecurity_actionRow .mx_AccessibleButton_kind_primary").click();
                 cy.get("#mx_passPhraseInput").clear().type(data["key_backup_passphrase"]);
                 cy.get(".mx_AccessSecretStorageDialog_primaryContainer [data-test-id='dialog-primary-button']").click();
                 cy.get(".mx_CompleteSecurity_actionRow .mx_AccessibleButton_kind_primary").click();
             } else {
-                cy.wait(2000).then(() => {
+                cy.log("Skipping security popup ...");
+                cy.wait(3000).then(() => {
                     Cypress.$(".mx_CompleteSecurity_skip")?.first()?.trigger("click");
                     Cypress.$(".mx_AccessibleButton_kind_danger_outline")?.first()?.trigger("click");
                 });
@@ -121,14 +123,30 @@ function runAction(action: string, data: JSONValue): string | undefined {
             return "logged_out";
         }
         case 'start_crosssign':
-            cy.get('.mx_CompleteSecurity_actionRow > .mx_AccessibleButton').click();
+            if (data["userId"]) {
+                cy.get(".mx_RightPanel_roomSummaryButton").click();
+                cy.get(".mx_RoomSummaryCard_icon_people").click();
+                cy.get(".mx_MemberList_query").type(data["userId"]);
+                cy.get(".mx_MemberList_wrapper .mx_EntityTile").click();
+                cy.get(".mx_UserInfo_verifyButton").click();
+                cy.get(".mx_UserInfo_startVerification").click();
+            } else {
+                cy.gotoAllSettings();
+                cy.get("[data-testid='settings-tab-USER_SECURITY_TAB']").click();
+                cy.contains("Verify").first().click();
+                cy.contains("Verify with another device").click();
+            }
             return 'started_crosssign';
         case 'accept_crosssign':
             // Can we please tag some buttons :)
             // Click 'Verify' when it comes up
             cy.get('.mx_Toast_buttons > .mx_AccessibleButton_kind_primary').click();
             // Click to move to emoji verification
-            cy.get('.mx_VerificationPanel_QRPhase_startOption > .mx_AccessibleButton').click();
+            cy.wait(1000).then(() => {
+                // Choose whichever exists
+                Cypress.$(".mx_VerificationPanel_verifyByEmojiButton")?.trigger("click");
+                Cypress.$('.mx_VerificationPanel_QRPhase_startOption > .mx_AccessibleButton')?.trigger("click");
+            });
             return 'accepted_crosssign';
         case 'verify_crosssign_emoji':
             cy.get('.mx_VerificationShowSas_buttonRow > .mx_AccessibleButton_kind_primary').click();
@@ -151,6 +169,12 @@ function runAction(action: string, data: JSONValue): string | undefined {
             cy.get('.mx_Dialog_primary').click();
             //cy.get('.mx_RoomHeader_nametext').should('contain', data['name']);
             return "room_created";
+        case 'create_dm':
+            cy.get('.mx_RoomListHeader_plusButton').click();
+            cy.get('.mx_ContextualMenu').contains('Start new chat').click();
+            cy.get('[data-testid="invite-dialog-input"]').type(`@${data["userId"]}`);
+            cy.get('.mx_InviteDialog_goButton').click();
+            return "dm_created";
         case 'send_message':
             cy.get('.mx_SendMessageComposer div[contenteditable=true]')
                 .click()
@@ -206,6 +230,8 @@ function runAction(action: string, data: JSONValue): string | undefined {
                 .type(`@${data["userId"]}`)
                 .type("{enter}");
             cy.get(".mx_InviteDialog_goButton").click();
+            cy.get(".mx_AccessibleButton.mx_BaseCard_back").click();
+            cy.get(".mx_AccessibleButton.mx_BaseCard_close", { timeout: 30000 }).click();
             return "invited";
         }
         case "open-room": {
