@@ -123,7 +123,7 @@ function runAction(action: string, data: JSONValue): string | undefined {
             return "logged_out";
         }
         case 'start_crosssign':
-            if (data["userId"]) {
+            if (data?.["userId"]) {
                 cy.get(".mx_RightPanel_roomSummaryButton").click();
                 cy.get(".mx_RoomSummaryCard_icon_people").click();
                 cy.get(".mx_MemberList_query").type(data["userId"]);
