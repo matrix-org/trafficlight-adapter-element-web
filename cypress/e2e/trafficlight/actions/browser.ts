@@ -1,0 +1,63 @@
+/*
+Copyright 2022 The Matrix.org Foundation C.I.C.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/// <reference types='cypress' />
+
+export function idle(): void {
+    cy.wait(5000);
+}
+
+export function wait(data: any): string {
+    const time = data["time"]? parseInt(data["time"], 10): 5000;
+    cy.wait(time);
+    return "wait_over";
+}
+
+export function advanceClock(data: any): string {
+    cy.clock().tick(data["milliseconds"]);
+    return "advanced_clock";
+}
+
+export function clearIDBStorage(): string {
+    cy.window().then((window) => {
+        return window.indexedDB.databases().then(async databases => {
+            const promises: Promise<void>[] = [];
+            const databaseNames: string[] = databases
+                .map((db) => db.name)
+                .filter((name) => name !== undefined) as string[];
+            for (const name of databaseNames) {
+                cy.log("Deleting indexedDb database", name);
+                const request = window.indexedDB.deleteDatabase(name);
+                const promise: Promise<void> = new Promise((resolve) => {
+                    request.onsuccess = () => { resolve(); };
+                });
+                promises.push(promise);
+            }
+            // await Promise.all(promises);
+        });
+    });
+    cy.wait(5000);
+    return "storage_cleared";
+}
+
+export function exit(): void {
+    cy.log('Client asked to exit, test complete or server teardown');
+}
+
+export function reload(): string {
+    cy.visit("/");
+    return "reloaded";
+}

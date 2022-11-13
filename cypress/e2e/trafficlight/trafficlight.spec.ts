@@ -19,6 +19,7 @@ limitations under the License.
 /// <reference types='cypress' />
 
 import { login, logout, register } from "./actions/auth";
+import { advanceClock, clearIDBStorage, exit, idle, reload, wait } from "./actions/browser";
 import {
     acceptCrossSigningRequest,
     enableDehydratedDevice,
@@ -35,6 +36,12 @@ import {
     inviteUser,
     openRoom,
 } from "./actions/room";
+import {
+    sendMessage,
+    verifyLastMessageIsTrusted,
+    verifyLastMessageIsUTD,
+    verifyMessageInTimeline,
+} from "./actions/timeline";
 
 type JSONValue =
     | string
@@ -76,7 +83,13 @@ function recurse() {
         const data: JSONValue = resp.body.data;
         const action: string = resp.body.action;
         cy.log('running action', action, JSON.stringify(data));
-        const result = runAction(action, data);
+        let result;
+        try {
+            result = runAction(action, data);
+        } catch (e) {
+            // Don't keep running if we encounter an error!
+            return;
+        }
         if (result) {
             sendResponse(result);
         }
@@ -124,64 +137,34 @@ function runAction(action: string, data: JSONValue): string | undefined {
         case "invite_user":
             return inviteUser(data);
 
-        case 'idle':
-            cy.wait(5000);
-            break;
+        // Timeline
         case 'send_message':
-            cy.get('.mx_SendMessageComposer div[contenteditable=true]')
-                .click()
-                .type(data['message'])
-                .type("{enter}");
-            //cy.contains(data['message']).closest('mx_EventTile').should('have.class', 'mx_EventTile_receiptSent');
-            return "message_sent";
+            return sendMessage(data);
         case "verify_message_in_timeline":
-            cy.contains(data["message"]);
-            return "verified";
-        case 'wait': {
-            const time = data["time"]? parseInt(data["time"], 10): 5000;
-            cy.wait(time);
-            return "wait_over";
-        }
-        case "advance_clock": {
-            cy.clock().tick(data["milliseconds"]);
-            return "advanced_clock";
-        }
+            return verifyMessageInTimeline(data);
         case "verify_last_message_is_utd":
-            // verifies that the last tile is an UTD
-            cy.get(".mx_EventTile").then((elements) => {
-                const lastEventTile = Array.isArray(elements) ? elements[elements.length - 1] : elements;
-                cy.get(".mx_UnknownBody", { withinSubject: lastEventTile });
-            });
-            cy.get(".mx_UnknownBody");
-            return "verified";
-        case "verify_last_message_is_trusted": {
-            cy.get(".mx_EventTile")
-                .last()
-                .find(".mx_EventTile_e2eIcon").should("not.exist");
-            return "verified";
-        }
+            return verifyLastMessageIsUTD();
+        case "verify_last_message_is_trusted":
+            return verifyLastMessageIsTrusted();
+
+        // Browser
+        case 'idle':
+            idle();
+            break;
+        case 'wait':
+            return wait(data);
+        case "advance_clock":
+            return advanceClock(data);
         case "clear_idb_storage":
-            cy.window().then((window) => {
-                return window.indexedDB.databases().then(databases => {
-                    const databaseNames: string[] = databases
-                        .map((db) => db.name)
-                        .filter((name) => name !== undefined) as string[];
-                    for (const name of databaseNames) {
-                        cy.log("Deleting indexedDb database", name);
-                        window.indexedDB.deleteDatabase(name);
-                    }
-                });
-            });
-            return "storage_cleared";
+            return clearIDBStorage();
         case "reload":
-            cy.visit("/");
-            // cy.reload();
-            return "reloaded";
+            return reload();
         case 'exit':
-            cy.log('Client asked to exit, test complete or server teardown');
-            return;
+            exit();
+            break;
+
         default:
             cy.log('WARNING: unknown action ', action);
-            return;
+            break;
     }
 }
