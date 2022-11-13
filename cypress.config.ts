@@ -20,7 +20,7 @@ import installLogsPrinter from "cypress-terminal-report/src/installLogsPrinter";
 export default defineConfig({
     videoUploadOnPasses: false,
     experimentalInteractiveRunEvents: true,
-    defaultCommandTimeout: 10000,
+    defaultCommandTimeout: 30000,
     chromeWebSecurity: false,
     e2e: {
         baseUrl: 'https://develop.element.io/',
