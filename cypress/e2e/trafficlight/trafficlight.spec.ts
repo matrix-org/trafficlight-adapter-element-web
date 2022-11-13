@@ -19,6 +19,14 @@ limitations under the License.
 /// <reference types='cypress' />
 
 import { login, logout, register } from "./actions/auth";
+import {
+    acceptCrossSigningRequest,
+    enableDehydratedDevice,
+    enableKeyBackup,
+    startCrossSigning,
+    verifyCrossSigningEmoji,
+    verifyDeviceIsTrusted,
+} from "./actions/e2e";
 
 type JSONValue =
     | string
@@ -72,50 +80,28 @@ function recurse() {
 
 function runAction(action: string, data: JSONValue): string | undefined {
     switch (action) {
+        // Auth
         case 'register':
             return register(data);
         case 'login':
             return login(data);
-        case "logout": {
+        case "logout":
             return logout();
-        }
+
+        // E2E
         case 'start_crosssign':
-            if (data?.["userId"]) {
-                cy.get(".mx_RightPanel_roomSummaryButton").click();
-                cy.get(".mx_RoomSummaryCard_icon_people").click();
-                cy.get(".mx_MemberList_query").type(data["userId"]);
-                cy.get(".mx_MemberList_wrapper .mx_EntityTile").click();
-                cy.get(".mx_UserInfo_verifyButton").click();
-                cy.get(".mx_UserInfo_startVerification").click();
-            } else {
-                cy.gotoAllSettings();
-                cy.get("[data-testid='settings-tab-USER_SECURITY_TAB']").click();
-                cy.contains("Verify").first().click();
-                cy.contains("Verify with another device").click();
-            }
-            return 'started_crosssign';
+            return startCrossSigning(data);
         case 'accept_crosssign':
-            // Can we please tag some buttons :)
-            // Click 'Verify' when it comes up
-            cy.get('.mx_Toast_buttons > .mx_AccessibleButton_kind_primary').click();
-            // Click to move to emoji verification
-            cy.wait(1000).then(() => {
-                // Choose whichever exists
-                Cypress.$(".mx_VerificationPanel_verifyByEmojiButton")?.trigger("click");
-                Cypress.$('.mx_VerificationPanel_QRPhase_startOption > .mx_AccessibleButton')?.trigger("click");
-            });
-            return 'accepted_crosssign';
+            return acceptCrossSigningRequest();
         case 'verify_crosssign_emoji':
-            cy.get('.mx_VerificationShowSas_buttonRow > .mx_AccessibleButton_kind_primary').click();
-            cy.get('.mx_UserInfo_container > .mx_AccessibleButton').click();
-            return 'verified_crosssign';
+            return verifyCrossSigningEmoji();
         case "verify_trusted_device":
-            cy.gotoAllSettings();
-            cy.get("[data-testid='settings-tab-USER_SECURITY_TAB']").click();
-            // For now, we only care if there are any verified devices
-            cy.contains(/^Verified devices$/);
-            cy.get(".mx_DevicesPanel_device").children();
-            return "verified";
+            return verifyDeviceIsTrusted();
+        case "enable_dehydrated_device":
+            return enableDehydratedDevice(data);
+        case "enable_key_backup":
+            return enableKeyBackup(data);
+
         case 'idle':
             cy.wait(5000);
             break;
@@ -156,36 +142,6 @@ function runAction(action: string, data: JSONValue): string | undefined {
             cy.get(".mx_Dialog_cancelButton").click();
             cy.get("[data-test-id=base-card-close-button]").click();
             return "changed";
-        case "enable_dehydrated_device": {
-            cy.gotoAllSettings();
-            cy.get("[data-testid='settings-tab-USER_LABS_TAB']").click();
-            cy.get("[aria-label='Offline encrypted messaging using dehydrated devices']").click();
-            cy.get(".mx_Dialog_cancelButton").click();
-            runAction("enable_key_backup", data);
-            return "enabled_dehydrated_device";
-        }
-        case "enable_key_backup": {
-            cy.gotoAllSettings();
-            cy.get("[data-testid='settings-tab-USER_SECURITY_TAB']").click();
-            cy.get(".mx_SecureBackupPanel_buttonRow").contains("Set up").click();
-            cy.get(".mx_CreateSecretStorageDialog_optionIcon_securePhrase").click();
-            cy.get(".mx_CreateSecretStorageDialog [data-testid='dialog-primary-button']").click();
-            const password = data["key_backup_passphrase"];
-            if (!password) {
-                throw new Error("'key_backup_passphrase' not in data for action 'enable_dehydrated_device'");
-            }
-            cy.get(".mx_CreateSecretStorageDialog_passPhraseContainer input[type='password']").type(password);
-            cy.get("[data-testid='dialog-primary-button']").click();
-            // confirm the password again
-            cy.get(".mx_CreateSecretStorageDialog_passPhraseContainer input[type='password']").type(password);
-            cy.get("[data-testid='dialog-primary-button']").click();
-            // Continue to next screen
-            cy.get("[data-testid='dialog-primary-button']").click();
-            // Classic flakiness fix
-            cy.wait(500);
-            cy.get(".mx_CreateSecretStorageDialog").contains("Continue").click();
-            return "key_backup_enabled";
-        }
         case "invite_user": {
             cy.get(".mx_RightPanel_roomSummaryButton").click();
             cy.get(".mx_RoomSummaryCard_icon_people").click();
