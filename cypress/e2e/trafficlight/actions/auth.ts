@@ -69,12 +69,9 @@ export function logout(): string {
     cy.get(".mx_ContextualMenu")
         .contains("Sign out")
         .click()
-        .wait(100)
+        .wait(2000)
         .then(() => {
-            Cypress.$(".mx_QuestionDialog")
-                .find("[data-test-id='dialog-primary-button']")
-                ?.first()
-                ?.trigger("click");
+            Cypress.$("button:contains('Sign out')")?.trigger("click");
         });
     cy.wait(2000).then(() => {
         Cypress.$(".mx_ErrorDialog .mx_Dialog_primary")?.first().trigger("click");
