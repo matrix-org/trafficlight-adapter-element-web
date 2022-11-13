@@ -72,7 +72,7 @@ function runAction(action: string, data: JSONValue): string | undefined {
     switch (action) {
         case 'register':
             cy.visit('/#/register');
-            cy.get('.mx_ServerPicker_change', { timeout: 15000 }).click();
+            cy.get('.mx_ServerPicker_change').click();
             cy.get('.mx_ServerPickerDialog_continue').should('be.visible');
             cy.get('.mx_ServerPickerDialog_otherHomeserver').type(data['homeserver_url']['local']);
             cy.get('.mx_ServerPickerDialog_continue').click();
@@ -88,7 +88,7 @@ function runAction(action: string, data: JSONValue): string | undefined {
             return 'registered';
         case 'login':
             cy.visit('/#/login');
-            cy.get('#mx_LoginForm_username', { timeout: 15000 }).should('be.visible');
+            cy.get('#mx_LoginForm_username').should('be.visible');
             cy.get('.mx_ServerPicker_change').click();
             cy.get('.mx_ServerPickerDialog_otherHomeserver').clear().type(data['homeserver_url']['local']);
             cy.get('.mx_ServerPickerDialog_continue').click();
@@ -100,9 +100,9 @@ function runAction(action: string, data: JSONValue): string | undefined {
             // Try to restore from key backup if needed
             if (data["key_backup_passphrase"]) {
                 cy.log("Restoring from keybackup ...");
-                cy.get(".mx_CompleteSecurity_actionRow .mx_AccessibleButton_kind_primary").click();
+                cy.get(".mx_CompleteSecurity_actionRow .mx_AccessibleButton_kind_primary").last().click();
                 cy.get("#mx_passPhraseInput").clear().type(data["key_backup_passphrase"]);
-                cy.get(".mx_AccessSecretStorageDialog_primaryContainer [data-test-id='dialog-primary-button']").click();
+                cy.get(".mx_AccessSecretStorageDialog_primaryContainer [data-testid='dialog-primary-button']").click();
                 cy.get(".mx_CompleteSecurity_actionRow .mx_AccessibleButton_kind_primary").click();
             } else {
                 cy.log("Skipping security popup ...");
@@ -152,6 +152,13 @@ function runAction(action: string, data: JSONValue): string | undefined {
             cy.get('.mx_VerificationShowSas_buttonRow > .mx_AccessibleButton_kind_primary').click();
             cy.get('.mx_UserInfo_container > .mx_AccessibleButton').click();
             return 'verified_crosssign';
+        case "verify_trusted_device":
+            cy.gotoAllSettings();
+            cy.get("[data-testid='settings-tab-USER_SECURITY_TAB']").click();
+            // For now, we only care if there are any verified devices
+            cy.contains(/^Verified devices$/);
+            cy.get(".mx_DevicesPanel_device").children();
+            return "verified";
         case 'idle':
             cy.wait(5000);
             break;
@@ -205,18 +212,18 @@ function runAction(action: string, data: JSONValue): string | undefined {
             cy.get("[data-testid='settings-tab-USER_SECURITY_TAB']").click();
             cy.get(".mx_SecureBackupPanel_buttonRow").contains("Set up").click();
             cy.get(".mx_CreateSecretStorageDialog_optionIcon_securePhrase").click();
-            cy.get("[data-test-id='dialog-primary-button']").click();
+            cy.get(".mx_CreateSecretStorageDialog [data-testid='dialog-primary-button']").click();
             const password = data["key_backup_passphrase"];
             if (!password) {
                 throw new Error("'key_backup_passphrase' not in data for action 'enable_dehydrated_device'");
             }
             cy.get(".mx_CreateSecretStorageDialog_passPhraseContainer input[type='password']").type(password);
-            cy.get("[data-test-id='dialog-primary-button']").click();
+            cy.get("[data-testid='dialog-primary-button']").click();
             // confirm the password again
             cy.get(".mx_CreateSecretStorageDialog_passPhraseContainer input[type='password']").type(password);
-            cy.get("[data-test-id='dialog-primary-button']").click();
+            cy.get("[data-testid='dialog-primary-button']").click();
             // Continue to next screen
-            cy.get("[data-test-id='dialog-primary-button']").click();
+            cy.get("[data-testid='dialog-primary-button']").click();
             // Classic flakiness fix
             cy.wait(500);
             cy.get(".mx_CreateSecretStorageDialog").contains("Continue").click();
