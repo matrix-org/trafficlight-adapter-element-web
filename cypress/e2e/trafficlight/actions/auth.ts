@@ -76,5 +76,8 @@ export function logout(): string {
                 ?.first()
                 ?.trigger("click");
         });
+    cy.wait(2000).then(() => {
+        Cypress.$(".mx_ErrorDialog .mx_Dialog_primary")?.first().trigger("click");
+    });
     return "logged_out";
 }
