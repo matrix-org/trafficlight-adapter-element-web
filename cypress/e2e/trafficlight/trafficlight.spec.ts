@@ -26,7 +26,7 @@ import {
     startCrossSigning,
     verifyCrossSigningEmoji,
     verifyDeviceIsTrusted,
-} from "./actions/e2e";
+} from "./actions/e2ee";
 
 type JSONValue =
     | string
@@ -88,7 +88,7 @@ function runAction(action: string, data: JSONValue): string | undefined {
         case "logout":
             return logout();
 
-        // E2E
+        // E2EE
         case 'start_crosssign':
             return startCrossSigning(data);
         case 'accept_crosssign':
