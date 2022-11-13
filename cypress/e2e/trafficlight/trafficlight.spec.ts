@@ -27,6 +27,14 @@ import {
     verifyCrossSigningEmoji,
     verifyDeviceIsTrusted,
 } from "./actions/e2ee";
+import {
+    acceptInvite,
+    changeRoomHistoryVisibility,
+    createDm,
+    createRoom,
+    inviteUser,
+    openRoom,
+} from "./actions/room";
 
 type JSONValue =
     | string
@@ -102,29 +110,23 @@ function runAction(action: string, data: JSONValue): string | undefined {
         case "enable_key_backup":
             return enableKeyBackup(data);
 
+        // Room
+        case 'create_room':
+            return createRoom(data);
+        case 'create_dm':
+            return createDm(data);
+        case "change_room_history_visibility":
+            return changeRoomHistoryVisibility(data);
+        case "open-room":
+            return openRoom(data);
+        case "accept_invite":
+            return acceptInvite();
+        case "invite_user":
+            return inviteUser(data);
+
         case 'idle':
             cy.wait(5000);
             break;
-        case 'create_room':
-            cy.get('.mx_RoomListHeader_plusButton').click();
-            cy.get('.mx_ContextualMenu').contains('New room').click();
-            cy.get('.mx_CreateRoomDialog_name input').type(data['name']);
-            if (data['topic']) {
-                cy.get('.mx_CreateRoomDialog_topic input').type(data['topic']);
-            }
-            // do this to prevent https://github.com/vector-im/element-web/issues/22590, weirdly
-            // cy.get('.mx_CreateRoomDialog_name input').click();
-            // cy.wait(5000);
-
-            cy.get('.mx_Dialog_primary').click();
-            //cy.get('.mx_RoomHeader_nametext').should('contain', data['name']);
-            return "room_created";
-        case 'create_dm':
-            cy.get('.mx_RoomListHeader_plusButton').click();
-            cy.get('.mx_ContextualMenu').contains('Start new chat').click();
-            cy.get('[data-testid="invite-dialog-input"]').type(`@${data["userId"]}`);
-            cy.get('.mx_InviteDialog_goButton').click();
-            return "dm_created";
         case 'send_message':
             cy.get('.mx_SendMessageComposer div[contenteditable=true]')
                 .click()
@@ -132,36 +134,6 @@ function runAction(action: string, data: JSONValue): string | undefined {
                 .type("{enter}");
             //cy.contains(data['message']).closest('mx_EventTile').should('have.class', 'mx_EventTile_receiptSent');
             return "message_sent";
-        case "change_room_history_visibility":
-            cy.get(".mx_RightPanel_roomSummaryButton").click();
-            cy.get(".mx_RoomSummaryCard_icon_settings").click();
-            cy.get(`[data-testid='settings-tab-ROOM_SECURITY_TAB']`).click();
-            // should be either "shared", "invited" or "joined"
-            // TODO: has doesn't seem to work
-            cy.get(`#historyVis-${data['historyVisibility']}`).parents("label").click();
-            cy.get(".mx_Dialog_cancelButton").click();
-            cy.get("[data-test-id=base-card-close-button]").click();
-            return "changed";
-        case "invite_user": {
-            cy.get(".mx_RightPanel_roomSummaryButton").click();
-            cy.get(".mx_RoomSummaryCard_icon_people").click();
-            cy.get(".mx_MemberList_invite").click();
-            cy.get(".mx_InviteDialog_addressBar input")
-                .type(`@${data["userId"]}`)
-                .type("{enter}");
-            cy.get(".mx_InviteDialog_goButton").click();
-            cy.get(".mx_AccessibleButton.mx_BaseCard_back").click();
-            cy.get(".mx_AccessibleButton.mx_BaseCard_close", { timeout: 30000 }).click();
-            return "invited";
-        }
-        case "open-room": {
-            cy.get(".mx_RoomSublist_tiles").contains(data["name"]).click();
-            return "room-opened";
-        }
-        case "accept_invite":
-            cy.get(".mx_RoomTile").click();
-            cy.get(".mx_RoomPreviewBar_actions .mx_AccessibleButton_kind_primary").click();
-            return "accepted";
         case "verify_message_in_timeline":
             cy.contains(data["message"]);
             return "verified";
