@@ -33,20 +33,14 @@ export function advanceClock(data: any): string {
 
 export function clearIDBStorage(): string {
     cy.window().then((window) => {
-        return window.indexedDB.databases().then(async databases => {
-            const promises: Promise<void>[] = [];
+        return window.indexedDB.databases().then(databases => {
             const databaseNames: string[] = databases
                 .map((db) => db.name)
                 .filter((name) => name !== undefined) as string[];
             for (const name of databaseNames) {
                 cy.log("Deleting indexedDb database", name);
-                const request = window.indexedDB.deleteDatabase(name);
-                const promise: Promise<void> = new Promise((resolve) => {
-                    request.onsuccess = () => { resolve(); };
-                });
-                promises.push(promise);
+                window.indexedDB.deleteDatabase(name);
             }
-            // await Promise.all(promises);
         });
     });
     cy.wait(5000);
