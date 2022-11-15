@@ -37,18 +37,18 @@ export function acceptCrossSigningRequest(): string {
     // Can we please tag some buttons :)
     // Click 'Verify' when it comes up
     cy.get('.mx_Toast_buttons > .mx_AccessibleButton_kind_primary').click();
+    return 'accepted_crosssign';
+}
+
+export function verifyCrossSigningEmoji(): string {
     // Click to move to emoji verification
     cy.wait(1000).then(() => {
         // Choose whichever exists
         Cypress.$(".mx_VerificationPanel_verifyByEmojiButton")?.trigger("click");
         Cypress.$('.mx_VerificationPanel_QRPhase_startOption > .mx_AccessibleButton')?.trigger("click");
     });
-    return 'accepted_crosssign';
-}
-
-export function verifyCrossSigningEmoji(): string {
-    cy.get('.mx_VerificationShowSas_buttonRow > .mx_AccessibleButton_kind_primary').click();
-    cy.get('.mx_UserInfo_container > .mx_AccessibleButton').click();
+    cy.contains("They match").click();
+    cy.contains("Got it").click();
     return 'verified_crosssign';
 }
 

@@ -18,6 +18,8 @@ limitations under the License.
 
 /// <reference types='cypress' />
 
+import fetch from "node-fetch";
+
 import { login, logout, register } from "./actions/auth";
 import { advanceClock, clearIDBStorage, exit, idle, reload, wait } from "./actions/browser";
 import {
@@ -50,8 +52,37 @@ type JSONValue =
     | { [x: string]: JSONValue }
     | Array<JSONValue>;
 
-Cypress.on('uncaught:exception', (err, runnable) => {
+Cypress.on('uncaught:exception', (e, runnable) => {
+    console.log("uncaught exception", e.message);
+    const errorUrl = `${Cypress.env('TRAFFICLIGHT_URL') }/client/${ Cypress.env('TRAFFICLIGHT_UUID') }/error`;
+    console.log(e.message);
+    const body = JSON.stringify({
+        error: {
+            type: e.name,
+            details: e.message,
+            path: "foo/bar",
+        },
+    });
+    fetch(errorUrl, { method: "POST", body });
     return false;
+});
+
+Cypress.on('fail', (e) => {
+    const errorUrl = `${Cypress.env('TRAFFICLIGHT_URL') }/client/${ Cypress.env('TRAFFICLIGHT_UUID') }/error`;
+    console.log("fail", e.message);
+    const body = JSON.stringify({
+        error: {
+            type: e.name,
+            details: e.message,
+            path: "foo/bar",
+        },
+    });
+    fetch(errorUrl, {
+        method: "post",
+        body,
+        headers: { 'Content-Type': 'application/json' },
+    });
+    throw e;
 });
 
 describe('traffic light client', () => {
