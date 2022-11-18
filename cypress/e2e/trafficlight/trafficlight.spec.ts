@@ -266,7 +266,7 @@ function runAction(action: string, data: JSONValue): string | JSONValue | undefi
                     rsp.push(tile);
                 },
             );
-            return { "response": "got_timeline", "timeline": { "timeline": rsp } };
+            return { "response": "got_timeline", "timeline": rsp };
         }
         case "clear_idb_storage":
             return clearIDBStorage();
