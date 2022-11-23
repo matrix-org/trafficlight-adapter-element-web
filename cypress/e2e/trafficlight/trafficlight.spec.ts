@@ -161,7 +161,7 @@ function runAction(action: string, data: JSONValue): string | undefined {
             return createDm(data);
         case "change_room_history_visibility":
             return changeRoomHistoryVisibility(data);
-        case "open-room":
+        case "open_room":
             return openRoom(data);
         case "accept_invite":
             return acceptInvite();
