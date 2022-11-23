@@ -54,7 +54,7 @@ export function changeRoomHistoryVisibility(data: any): string {
 
 export function openRoom(data: any): string {
     cy.get(".mx_RoomSublist_tiles").contains(data["name"]).click();
-    return "room-opened";
+    return "room_opened";
 }
 
 export function acceptInvite(): string {

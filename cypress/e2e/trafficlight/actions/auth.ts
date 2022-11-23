@@ -61,7 +61,7 @@ export function login(data: any): string {
             Cypress.$(".mx_AccessibleButton_kind_danger_outline")?.first()?.trigger("click");
         });
     }
-    return 'loggedin';
+    return 'logged_in';
 }
 
 export function logout(): string {
