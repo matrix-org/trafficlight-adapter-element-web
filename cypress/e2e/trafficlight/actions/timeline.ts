@@ -16,17 +16,17 @@ limitations under the License.
 
 /// <reference types='cypress' />
 
-export function sendMessage(data: any): string {
+export function sendMessage(message: string): string {
     cy.get(".mx_SendMessageComposer div[contenteditable=true]")
         .click()
-        .type(data["message"])
+        .type(message)
         .type("{enter}");
     //cy.contains(data['message']).closest('mx_EventTile').should('have.class', 'mx_EventTile_receiptSent');
     return "message_sent";
 }
 
-export function verifyMessageInTimeline(data: any): string {
-    cy.contains(data["message"]);
+export function verifyMessageInTimeline(message: string): string {
+    cy.contains(message);
     return "verified";
 }
 

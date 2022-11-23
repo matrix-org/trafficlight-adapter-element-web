@@ -16,11 +16,11 @@ limitations under the License.
 
 /// <reference types='cypress' />
 
-export function startCrossSigning(data: any): string {
-    if (data?.["userId"]) {
+export function startCrossSigning(userId: string): string {
+    if (userId) {
         cy.get(".mx_RightPanel_roomSummaryButton").click();
         cy.get(".mx_RoomSummaryCard_icon_people").click();
-        cy.get(".mx_MemberList_query").type(data["userId"]);
+        cy.get(".mx_MemberList_query").type(userId);
         cy.get(".mx_MemberList_wrapper .mx_EntityTile").click();
         cy.get(".mx_UserInfo_verifyButton").click();
         cy.get(".mx_UserInfo_startVerification").click();
@@ -62,20 +62,16 @@ export function verifyDeviceIsTrusted(): string {
     return "verified";
 }
 
-export function enableKeyBackup(data: any): string {
+export function enableKeyBackup(passphrase: string): string {
     cy.gotoAllSettings();
     cy.get("[data-testid='settings-tab-USER_SECURITY_TAB']").click();
     cy.get(".mx_SecureBackupPanel_buttonRow").contains("Set up").click();
     cy.get(".mx_CreateSecretStorageDialog_optionIcon_securePhrase").click();
     cy.get(".mx_CreateSecretStorageDialog [data-testid='dialog-primary-button']").click();
-    const password = data["key_backup_passphrase"];
-    if (!password) {
-        throw new Error("'key_backup_passphrase' not in data for action 'enable_dehydrated_device'");
-    }
-    cy.get(".mx_CreateSecretStorageDialog_passPhraseContainer input[type='password']").type(password);
+    cy.get(".mx_CreateSecretStorageDialog_passPhraseContainer input[type='password']").type(passphrase);
     cy.get("[data-testid='dialog-primary-button']").click();
     // confirm the password again
-    cy.get(".mx_CreateSecretStorageDialog_passPhraseContainer input[type='password']").type(password);
+    cy.get(".mx_CreateSecretStorageDialog_passPhraseContainer input[type='password']").type(passphrase);
     cy.get("[data-testid='dialog-primary-button']").click();
     // Continue to next screen
     cy.get("[data-testid='dialog-primary-button']").click();
@@ -85,11 +81,11 @@ export function enableKeyBackup(data: any): string {
     return "key_backup_enabled";
 }
 
-export function enableDehydratedDevice(data: any): string {
+export function enableDehydratedDevice(passphrase: string): string {
     cy.gotoAllSettings();
     cy.get("[data-testid='settings-tab-USER_LABS_TAB']").click();
     cy.get("[aria-label='Offline encrypted messaging using dehydrated devices']").click();
     cy.get(".mx_Dialog_cancelButton").click();
-    enableKeyBackup(data);
+    enableKeyBackup(passphrase);
     return "enabled_dehydrated_device";
 }

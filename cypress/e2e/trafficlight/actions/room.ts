@@ -16,12 +16,12 @@ limitations under the License.
 
 /// <reference types='cypress' />
 
-export function createRoom(data: any): string {
+export function createRoom(name: string, topic: string): string {
     cy.get('.mx_RoomListHeader_plusButton').click();
     cy.get('.mx_ContextualMenu').contains('New room').click();
-    cy.get('.mx_CreateRoomDialog_name input').type(data['name']);
-    if (data['topic']) {
-        cy.get('.mx_CreateRoomDialog_topic input').type(data['topic']);
+    cy.get('.mx_CreateRoomDialog_name input').type(name);
+    if (topic) {
+        cy.get('.mx_CreateRoomDialog_topic input').type(topic);
     }
     // do this to prevent https://github.com/vector-im/element-web/issues/22590, weirdly
     // cy.get('.mx_CreateRoomDialog_name input').click();
@@ -32,28 +32,27 @@ export function createRoom(data: any): string {
     return "room_created";
 }
 
-export function createDm(data: any): string {
+export function createDm(userId: string): string {
     cy.get('.mx_RoomListHeader_plusButton').click();
     cy.get('.mx_ContextualMenu').contains('Start new chat').click();
-    cy.get('[data-testid="invite-dialog-input"]').type(`@${data["userId"]}`);
+    cy.get('[data-testid="invite-dialog-input"]').type(`@${userId}`);
     cy.get('.mx_InviteDialog_goButton').click();
     return "dm_created";
 }
 
-export function changeRoomHistoryVisibility(data: any): string {
+export function changeRoomHistoryVisibility(historyVisibility: string): string {
     cy.get(".mx_RightPanel_roomSummaryButton").click();
     cy.get(".mx_RoomSummaryCard_icon_settings").click();
     cy.get(`[data-testid='settings-tab-ROOM_SECURITY_TAB']`).click();
     // should be either "shared", "invited" or "joined"
-    // TODO: has doesn't seem to work
-    cy.get(`#historyVis-${data['historyVisibility']}`).parents("label").click();
+    cy.get(`#historyVis-${historyVisibility}`).parents("label").click();
     cy.get(".mx_Dialog_cancelButton").click();
     cy.get("[data-test-id=base-card-close-button]").click();
     return "changed";
 }
 
-export function openRoom(data: any): string {
-    cy.get(".mx_RoomSublist_tiles").contains(data["name"]).click();
+export function openRoom(name: string): string {
+    cy.get(".mx_RoomSublist_tiles").contains(name).click();
     return "room_opened";
 }
 
@@ -63,12 +62,12 @@ export function acceptInvite(): string {
     return "accepted";
 }
 
-export function inviteUser(data: any): string {
+export function inviteUser(userId: string): string {
     cy.get(".mx_RightPanel_roomSummaryButton").click();
     cy.get(".mx_RoomSummaryCard_icon_people").click();
     cy.get(".mx_MemberList_invite").click();
     cy.get(".mx_InviteDialog_addressBar input")
-        .type(`@${data["userId"]}`)
+        .type(`@${userId}`)
         .type("{enter}");
     cy.get(".mx_InviteDialog_goButton").click();
     cy.get(".mx_AccessibleButton.mx_BaseCard_back").click();

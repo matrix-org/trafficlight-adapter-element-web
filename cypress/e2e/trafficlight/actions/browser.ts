@@ -20,14 +20,18 @@ export function idle(): void {
     cy.wait(5000);
 }
 
-export function wait(data: any): string {
-    const time = data["time"]? parseInt(data["time"], 10): 5000;
-    cy.wait(time);
+export function wait(time: string): string {
+    const _time = time ? parseInt(time, 10): 5000;
+    cy.wait(_time);
     return "wait_over";
 }
 
-export function advanceClock(data: any): string {
-    cy.clock().tick(data["milliseconds"]);
+export function advanceClock(milliseconds: string): string {
+    const millisecondsAsNumber = parseInt(milliseconds, 10);
+    if (isNaN(millisecondsAsNumber)) {
+        throw new Error(`Cannot convert ${milliseconds} to integer!`);
+    }
+    cy.clock().tick(millisecondsAsNumber);
     return "advanced_clock";
 }
 

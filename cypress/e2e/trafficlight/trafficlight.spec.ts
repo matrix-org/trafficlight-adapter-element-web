@@ -141,38 +141,91 @@ function runAction(action: string, data: JSONValue): string | undefined {
             return logout();
 
         // E2EE
-        case 'start_crosssign':
-            return startCrossSigning(data);
+        case 'start_crosssign': {
+            const userId = data?.["userId"];
+            return startCrossSigning(userId);
+        }
         case 'accept_crosssign':
             return acceptCrossSigningRequest();
         case 'verify_crosssign_emoji':
             return verifyCrossSigningEmoji();
         case "verify_trusted_device":
             return verifyDeviceIsTrusted();
-        case "enable_dehydrated_device":
-            return enableDehydratedDevice(data);
-        case "enable_key_backup":
-            return enableKeyBackup(data);
+        case "enable_dehydrated_device": {
+            const passphrase = data?.["key_backup_passphrase"];
+            if (!passphrase) {
+                throw new Error("'key_backup_passphrase' not in data for action 'enable_dehydrated_device'");
+            }
+            return enableDehydratedDevice(passphrase);
+        }
+        case "enable_key_backup": {
+            const passphrase = data?.["key_backup_passphrase"];
+            if (!passphrase) {
+                throw new Error("'key_backup_passphrase' not in data for action 'enable_key_backup'");
+            }
+            return enableKeyBackup(passphrase);
+        }
 
         // Room
-        case 'create_room':
-            return createRoom(data);
-        case 'create_dm':
-            return createDm(data);
-        case "change_room_history_visibility":
-            return changeRoomHistoryVisibility(data);
-        case "open_room":
-            return openRoom(data);
+        case 'create_room': {
+            const name = data?.["name"];
+            if (!name) {
+                throw new Error("'name' not in data for action 'create_room'");
+            }
+            const topic = data?.["topic"];
+            return createRoom(name, topic);
+        }
+        case 'create_dm': {
+            const userId = data?.["userId"];
+            if (!userId) {
+                throw new Error("'id' not in data for action 'create_dm'");
+            }
+            return createDm(userId);
+        }
+        case "change_room_history_visibility": {
+            const historyVisiblity = data["historyVisibility"];
+            if (!historyVisiblity) {
+                throw new Error("'historyVisibility' not in data for action 'change_room_history_visibility'");
+            }
+            const acceptedValues = ["shared", "invited", "joined"];
+            if (!acceptedValues.includes(historyVisiblity)) {
+                throw new Error(
+                    `historyVisibility should be one of ${acceptedValues.join(", ")}, but found ${historyVisiblity}!`);
+            }
+            return changeRoomHistoryVisibility(historyVisiblity);
+        }
+        case "open_room": {
+            const name = data["name"];
+            if (!name) {
+                throw new Error("'name' not in data for action 'open_room'");
+            }
+            return openRoom(name);
+        }
         case "accept_invite":
             return acceptInvite();
-        case "invite_user":
-            return inviteUser(data);
+        case "invite_user": {
+            const userId = data["userId"];
+            if (!userId) {
+                throw new Error("'userId' not in data for action 'invite_user'");
+            }
+            return inviteUser(userId);
+        }
 
         // Timeline
-        case 'send_message':
-            return sendMessage(data);
-        case "verify_message_in_timeline":
-            return verifyMessageInTimeline(data);
+        case 'send_message': {
+            const message = data["message"];
+            if (!message) {
+                throw new Error("'message' not in data for action 'send_message'");
+            }
+            return sendMessage(message);
+        }
+        case "verify_message_in_timeline": {
+            const message = data["message"];
+            if (!message) {
+                throw new Error("'message' not in data for action 'verify_message_in_timeline'");
+            }
+            return verifyMessageInTimeline(message);
+        }
         case "verify_last_message_is_utd":
             return verifyLastMessageIsUTD();
         case "verify_last_message_is_trusted":
@@ -182,10 +235,17 @@ function runAction(action: string, data: JSONValue): string | undefined {
         case 'idle':
             idle();
             break;
-        case 'wait':
-            return wait(data);
-        case "advance_clock":
-            return advanceClock(data);
+        case 'wait': {
+            const time = data?.["time"];
+            return wait(time);
+        }
+        case "advance_clock": {
+            const milliseconds = data["milliseconds"];
+            if (!milliseconds) {
+                throw new Error("'milliseconds' not in data for action 'advance_clock'");
+            }
+            return advanceClock(milliseconds);
+        }
         case "clear_idb_storage":
             return clearIDBStorage();
         case "reload":
