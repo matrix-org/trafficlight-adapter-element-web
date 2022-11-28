@@ -295,6 +295,6 @@ function runAction(action: string, data: JSONValue): string | undefined {
             cy.log('Client asked to exit, test complete or server teardown');
             return;
         default:
-            throw new Error('WARNING: unknown action ', action);
+            throw new Error(`WARNING: unknown action "${action}"`);
     }
 }
