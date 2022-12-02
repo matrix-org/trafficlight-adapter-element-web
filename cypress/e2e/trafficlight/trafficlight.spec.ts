@@ -39,6 +39,7 @@ import {
     openRoom,
 } from "./actions/room";
 import {
+    getTimeline,
     sendMessage,
     verifyLastMessageIsTrusted,
     verifyLastMessageIsUTD,
@@ -253,20 +254,7 @@ function runAction(action: string, data: JSONValue): string | JSONValue | undefi
             return advanceClock(milliseconds);
         }
         case "get_timeline": {
-            cy.log("Searching for information");
-            const rsp = [];
-            // TODO: assert we're in a specific room at this time.
-            Cypress.$('.mx_EventTile').each(
-                function(index, obj) {
-                    tile = {};
-                    tile['user'] = Cypress.$(obj).find(".mx_BaseAvatar_image").attr("title");
-                    const e2eicon = Cypress.$(obj).find(".mx_EventTile_e2eIcon").attr("class");
-                    tile['e2e_issues'] = e2eicon;
-                    tile['message'] = Cypress.$(obj).find(".mx_EventTile_content").text();
-                    rsp.push(tile);
-                },
-            );
-            return { "response": "got_timeline", "timeline": rsp };
+            return getTimeline();
         }
         case "clear_idb_storage":
             return clearIDBStorage();

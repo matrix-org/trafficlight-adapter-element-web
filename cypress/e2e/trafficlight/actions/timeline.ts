@@ -46,3 +46,18 @@ export function verifyLastMessageIsTrusted(): string {
         .find(".mx_EventTile_e2eIcon").should("not.exist");
     return "verified";
 }
+
+export function getTimeline(): JSONValue {
+    const rsp = [];
+    Cypress.$('.mx_EventTile').each(
+        function(index, obj) {
+            tile = {};
+            tile['user'] = Cypress.$(obj).find('.mx_BaseAvatar_image').attr('title');
+            const e2eicon = Cypress.$(obj).find('.mx_EventTile_e2eIcon').attr('class');
+            tile['e2e_issues'] = e2eicon;
+            tile['message'] = Cypress.$(obj).find('.mx_EventTile_content').text();
+            rsp.push(tile);
+        },
+    );
+    return { "response": "got_timeline", "timeline": rsp };
+}
