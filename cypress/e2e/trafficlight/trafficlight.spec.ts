@@ -104,7 +104,13 @@ function recurse() {
     const respondUrl = `${Cypress.env('TRAFFICLIGHT_URL') }/client/${ Cypress.env('TRAFFICLIGHT_UUID') }/respond`;
 
     function sendResponse(responseStatus) {
-        cy.request('POST', respondUrl, { response: responseStatus }).then((response) => {
+        let data;
+        if (typeof responseStatus == "string") {
+            data = { response: responseStatus };
+        } else {
+            data = responseStatus;
+        }
+        cy.request('POST', respondUrl, data).then((response) => {
             expect(response.status).to.eq(200);
         });
     }
@@ -130,7 +136,7 @@ function recurse() {
     });
 }
 
-function runAction(action: string, data: JSONValue): string | undefined {
+function runAction(action: string, data: JSONValue): string | JSONValue | undefined {
     switch (action) {
         // Auth
         case 'register':
@@ -245,6 +251,22 @@ function runAction(action: string, data: JSONValue): string | undefined {
                 throw new Error("'milliseconds' not in data for action 'advance_clock'");
             }
             return advanceClock(milliseconds);
+        }
+        case "get_timeline": {
+            cy.log("Searching for information");
+            const rsp = [];
+            // TODO: assert we're in a specific room at this time.
+            Cypress.$('.mx_EventTile').each(
+                function(index, obj) {
+                    tile = {};
+                    tile['user'] = Cypress.$(obj).find(".mx_BaseAvatar_image").attr("title");
+                    const e2eicon = Cypress.$(obj).find(".mx_EventTile_e2eIcon").attr("class");
+                    tile['e2e_issues'] = e2eicon;
+                    tile['message'] = Cypress.$(obj).find(".mx_EventTile_content").text();
+                    rsp.push(tile);
+                },
+            );
+            return { "response": "got_timeline", "timeline": { "timeline": rsp } };
         }
         case "clear_idb_storage":
             return clearIDBStorage();
