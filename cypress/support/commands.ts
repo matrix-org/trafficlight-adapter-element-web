@@ -21,16 +21,3 @@ Cypress.Commands.addAll({
         cy.get(".mx_IconizedContextMenu_optionList").contains("All settings").click();
     },
 });
-
-declare global {
-  namespace Cypress {
-    interface Chainable {
-      /**
-       * Custom command to go to All Settings view in element web.
-       */
-        gotoAllSettings(): Chainable<Element>;
-    }
-  }
-}
-
-export { };
