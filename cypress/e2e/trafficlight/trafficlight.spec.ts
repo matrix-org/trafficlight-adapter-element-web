@@ -255,7 +255,6 @@ function runAction(action: string, data: JSONValue): string | undefined {
             break;
 
         default:
-            cy.log('WARNING: unknown action ', action);
-            break;
+            throw new Error(`WARNING: unknown action "${action}"`);
     }
 }
