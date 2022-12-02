@@ -21,7 +21,7 @@ limitations under the License.
 import fetch from "node-fetch";
 
 import { login, logout, register } from "./actions/auth";
-import { advanceClock, clearIDBStorage, exit, idle, reload, wait } from "./actions/browser";
+import { advanceClock, clearIDBStorage, exit, idle, reload } from "./actions/browser";
 import {
     acceptCrossSigningRequest,
     enableDehydratedDevice,
@@ -242,10 +242,6 @@ function runAction(action: string, data: JSONValue): string | JSONValue | undefi
         case 'idle':
             idle();
             break;
-        case 'wait': {
-            const time = data?.["time"];
-            return wait(time);
-        }
         case "advance_clock": {
             const milliseconds = data["milliseconds"];
             if (!milliseconds) {
