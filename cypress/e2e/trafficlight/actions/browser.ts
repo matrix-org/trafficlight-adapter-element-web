@@ -20,12 +20,6 @@ export function idle(): void {
     cy.wait(5000);
 }
 
-export function wait(time: string): string {
-    const _time = time ? parseInt(time, 10): 5000;
-    cy.wait(_time);
-    return "wait_over";
-}
-
 export function advanceClock(milliseconds: string): string {
     const millisecondsAsNumber = parseInt(milliseconds, 10);
     if (isNaN(millisecondsAsNumber)) {
