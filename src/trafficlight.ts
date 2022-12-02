@@ -86,7 +86,7 @@ async function uploadFile(trafficlightUrl: string, uuid: string, filename: strin
     return promise;
 }
 
-async function runCypress(trafficlightUrl: string, uuid: string): Promise<boolean> {
+async function runCypress(trafficlightUrl: string, uuid: string, openMode: boolean): Promise<boolean> {
     const cypressOptions = {
         headed: true,
         // @ts-ignore-next-line
@@ -101,7 +101,7 @@ async function runCypress(trafficlightUrl: string, uuid: string): Promise<boolea
         },
         config: {
             retries: { // Override cypress.json - we want to run exactly once.
-                'openMode': 0,
+                'openMode': openMode ? 1 : 0,
                 'runMode': 0,
             },
             e2e: {
@@ -132,17 +132,25 @@ async function runCypress(trafficlightUrl: string, uuid: string): Promise<boolea
     }
 }
 
-async function runRepeatedly(trafficlightUrl: string) {
+async function runRepeatedly(trafficlightUrl: string, openMode: boolean) {
     // need to find an exit condition here
     let shouldContinue = true;
     while (shouldContinue) {
         const uuid = crypto.randomUUID();
         await registerClient(trafficlightUrl, uuid);
-        shouldContinue = await runCypress(trafficlightUrl, uuid);
+        shouldContinue = await runCypress(trafficlightUrl, uuid, openMode);
     }
 }
 
 const trafficlightUrl = process.env.TRAFFICLIGHT_URL || 'http://127.0.0.1:5000';
-runRepeatedly(trafficlightUrl).then((result) => {
+
+let openMode = false;
+for (let i = 0; i < process.argv.length; i++) {
+    if (process.argv[i] == "open") {
+        openMode = true;
+    }
+}
+
+runRepeatedly(trafficlightUrl, openMode).then((result) => {
     console.log(`Finished looping forever(?), got ${result}`);
 });
