@@ -53,13 +53,19 @@ type JSONValue =
     | { [x: string]: JSONValue }
     | Array<JSONValue>;
 
+
+class AdapterError extends Error {}
+
+class ActionError extends Error {}
+
 Cypress.on('uncaught:exception', (e, runnable) => {
     console.log("uncaught exception", e.message);
     const errorUrl = `${Cypress.env('TRAFFICLIGHT_URL') }/client/${ Cypress.env('TRAFFICLIGHT_UUID') }/error`;
     const errorPath = e.stack?.split("\n")[0];
+    const type = (e.name == "ActionError") ? "action" : "adapter";
     const body = JSON.stringify({
         error: {
-            type: e.name,
+            type: type,
             details: e.message,
             path: errorPath,
         },
@@ -71,9 +77,10 @@ Cypress.on('uncaught:exception', (e, runnable) => {
 Cypress.on('fail', (e) => {
     const errorUrl = `${Cypress.env('TRAFFICLIGHT_URL') }/client/${ Cypress.env('TRAFFICLIGHT_UUID') }/error`;
     const errorPath = e.stack?.split("\n").slice(1).join("\n");
+    const type = (e.name == "ActionError") ? "action" : "adapter";
     const body = JSON.stringify({
         error: {
-            type: e.name,
+            type: type,
             details: e.message,
             path: errorPath,
         },
@@ -161,14 +168,14 @@ function runAction(action: string, data: JSONValue): string | JSONValue | undefi
         case "enable_dehydrated_device": {
             const passphrase = data?.["key_backup_passphrase"];
             if (!passphrase) {
-                throw new Error("'key_backup_passphrase' not in data for action 'enable_dehydrated_device'");
+                throw new ActionError("'key_backup_passphrase' not in data for action 'enable_dehydrated_device'");
             }
             return enableDehydratedDevice(passphrase);
         }
         case "enable_key_backup": {
             const passphrase = data?.["key_backup_passphrase"];
             if (!passphrase) {
-                throw new Error("'key_backup_passphrase' not in data for action 'enable_key_backup'");
+                throw new ActionError("'key_backup_passphrase' not in data for action 'enable_key_backup'");
             }
             return enableKeyBackup(passphrase);
         }
@@ -177,7 +184,7 @@ function runAction(action: string, data: JSONValue): string | JSONValue | undefi
         case 'create_room': {
             const name = data?.["name"];
             if (!name) {
-                throw new Error("'name' not in data for action 'create_room'");
+                throw new ActionError("'name' not in data for action 'create_room'");
             }
             const topic = data?.["topic"];
             return createRoom(name, topic);
@@ -185,18 +192,18 @@ function runAction(action: string, data: JSONValue): string | JSONValue | undefi
         case 'create_dm': {
             const userId = data?.["userId"];
             if (!userId) {
-                throw new Error("'id' not in data for action 'create_dm'");
+                throw new ActionError("'id' not in data for action 'create_dm'");
             }
             return createDm(userId);
         }
         case "change_room_history_visibility": {
             const historyVisiblity = data["historyVisibility"];
             if (!historyVisiblity) {
-                throw new Error("'historyVisibility' not in data for action 'change_room_history_visibility'");
+                throw new ActionError("'historyVisibility' not in data for action 'change_room_history_visibility'");
             }
             const acceptedValues = ["shared", "invited", "joined"];
             if (!acceptedValues.includes(historyVisiblity)) {
-                throw new Error(
+                throw new ActionError(
                     `historyVisibility should be one of ${acceptedValues.join(", ")}, but found ${historyVisiblity}!`);
             }
             return changeRoomHistoryVisibility(historyVisiblity);
@@ -204,7 +211,7 @@ function runAction(action: string, data: JSONValue): string | JSONValue | undefi
         case "open_room": {
             const name = data["name"];
             if (!name) {
-                throw new Error("'name' not in data for action 'open_room'");
+                throw new ActionError("'name' not in data for action 'open_room'");
             }
             return openRoom(name);
         }
@@ -213,7 +220,7 @@ function runAction(action: string, data: JSONValue): string | JSONValue | undefi
         case "invite_user": {
             const userId = data["userId"];
             if (!userId) {
-                throw new Error("'userId' not in data for action 'invite_user'");
+                throw new ActionError("'userId' not in data for action 'invite_user'");
             }
             return inviteUser(userId);
         }
@@ -222,14 +229,14 @@ function runAction(action: string, data: JSONValue): string | JSONValue | undefi
         case 'send_message': {
             const message = data["message"];
             if (!message) {
-                throw new Error("'message' not in data for action 'send_message'");
+                throw new ActionError("'message' not in data for action 'send_message'");
             }
             return sendMessage(message);
         }
         case "verify_message_in_timeline": {
             const message = data["message"];
             if (!message) {
-                throw new Error("'message' not in data for action 'verify_message_in_timeline'");
+                throw new ActionError("'message' not in data for action 'verify_message_in_timeline'");
             }
             return verifyMessageInTimeline(message);
         }
@@ -261,6 +268,6 @@ function runAction(action: string, data: JSONValue): string | JSONValue | undefi
             break;
 
         default:
-            throw new Error(`WARNING: unknown action "${action}"`);
+            throw new AdapterError(`WARNING: unknown action "${action}"`);
     }
 }

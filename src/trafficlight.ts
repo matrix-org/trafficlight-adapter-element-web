@@ -42,12 +42,12 @@ function registerClient(trafficlightUrl: string, uuid: string) {
     return promise;
 }
 
-function reportError(trafficlightUrl: string, uuid: string, path: string, details: string) {
+function reportError(trafficlightUrl: string, uuid: string, path: string, details: string, type: string) {
     console.log('Reporting error in client');
 
     const data = JSON.stringify({
         error: {
-            type: "unknown",
+            type: type,
             path: path,
             details: details,
         },
@@ -88,9 +88,9 @@ async function uploadFile(trafficlightUrl: string, uuid: string, filename: strin
 
 async function runCypress(trafficlightUrl: string, uuid: string, openMode: boolean): Promise<boolean> {
     const cypressOptions = {
-        headed: true,
+        headed: false,
         // @ts-ignore-next-line
-        exit: false,
+        exit: true,
         quiet: false,
         browser: 'chromium',
         spec: './cypress/e2e/trafficlight/trafficlight.spec.ts',
@@ -115,7 +115,8 @@ async function runCypress(trafficlightUrl: string, uuid: string, openMode: boole
         result = await cypress.run(cypressOptions);
     } catch (err) {
         console.error('Could not execute tests:', err);
-        await reportError(trafficlightUrl, uuid, "unknown", err.stack);
+        const errorType = err.name == "TimeoutError" ? "action": "adapter";
+        await reportError(trafficlightUrl, uuid, "unknown", err.stack, errorType);
         return false;
     } finally {
         await uploadFile(trafficlightUrl, uuid, `cypress/logs/trafficlight/${uuid}/out.txt`);
@@ -125,32 +126,23 @@ async function runCypress(trafficlightUrl: string, uuid: string, openMode: boole
     // @ts-ignore-next-line
     if (result.totalFailed !== 0) {
         console.error('Some assertion failed, probably mentioned above');
-        await reportError(trafficlightUrl, uuid, "unknown", result.runs[0].tests[0].displayError);
+        await reportError(trafficlightUrl, uuid, "unknown", result.runs[0].tests[0].displayError, "action");
         return false;
     } else {
         return true;
     }
 }
 
-async function runRepeatedly(trafficlightUrl: string, openMode: boolean) {
-    // need to find an exit condition here
-    let shouldContinue = true;
-    while (shouldContinue) {
-        const uuid = crypto.randomUUID();
-        await registerClient(trafficlightUrl, uuid);
-        shouldContinue = await runCypress(trafficlightUrl, uuid, openMode);
-    }
-}
-
 const trafficlightUrl = process.env.TRAFFICLIGHT_URL || 'http://127.0.0.1:5000';
 
-let openMode = false;
+var openMode = false;
 for (let i = 0; i < process.argv.length; i++) {
     if (process.argv[i] == "open") {
         openMode = true;
     }
 }
 
-runRepeatedly(trafficlightUrl, openMode).then((result) => {
-    console.log(`Finished looping forever(?), got ${result}`);
+const uuid = crypto.randomUUID();
+registerClient(trafficlightUrl, uuid).then((result) => {
+    runCypress(trafficlightUrl, uuid, openMode);
 });
