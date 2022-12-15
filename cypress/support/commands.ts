@@ -20,4 +20,9 @@ Cypress.Commands.addAll({
         cy.get(".mx_UserMenu_userAvatar").click();
         cy.get(".mx_IconizedContextMenu_optionList").contains("All settings").click();
     },
+
+    // A very hacky way to use promises in Cypress
+    async resolveFromPromise(p: any) {
+        return await p;
+    },
 });
