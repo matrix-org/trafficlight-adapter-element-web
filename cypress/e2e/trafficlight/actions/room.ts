@@ -16,7 +16,7 @@ limitations under the License.
 
 /// <reference types='cypress' />
 
-export async function createRoom(name: string, topic: string): Promise<string> {
+export async function createRoom(name: string, topic: string): Promise<{roomId: string}> {
     cy.get('.mx_RoomListHeader_plusButton').click({ force: true });
     cy.get('.mx_ContextualMenu').contains('New room').click();
     cy.get('.mx_CreateRoomDialog_name input').type(name);
@@ -24,7 +24,8 @@ export async function createRoom(name: string, topic: string): Promise<string> {
         cy.get('.mx_CreateRoomDialog_topic input').type(topic);
     }
     cy.get('.mx_Dialog_primary').click();
-    return await getRoomIdFromName(name);
+    const roomId = await getRoomIdFromName(name);
+    return { roomId };
 }
 
 function getRoomIdFromName(name: string): Promise<string> {
