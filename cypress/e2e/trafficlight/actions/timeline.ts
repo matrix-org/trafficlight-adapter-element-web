@@ -47,11 +47,11 @@ export function verifyLastMessageIsTrusted(): string {
     return "verified";
 }
 
-export function getTimeline(): JSONValue {
-    const rsp = [];
+export function getTimeline(): Record<string, any> {
+    const rsp: any = [];
     Cypress.$('.mx_EventTile').each(
         function(index, obj) {
-            tile = {};
+            const tile = {};
             tile['user'] = Cypress.$(obj).find('.mx_BaseAvatar_image').attr('title');
             const e2eicon = Cypress.$(obj).find('.mx_EventTile_e2eIcon').attr('class');
             tile['e2e_issues'] = e2eicon;
