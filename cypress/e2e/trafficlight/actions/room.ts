@@ -16,20 +16,30 @@ limitations under the License.
 
 /// <reference types='cypress' />
 
-export function createRoom(name: string, topic: string): string {
-    cy.get('.mx_RoomListHeader_plusButton').click();
+export async function createRoom(name: string, topic: string): Promise<string> {
+    cy.get('.mx_RoomListHeader_plusButton').click({ force: true });
     cy.get('.mx_ContextualMenu').contains('New room').click();
     cy.get('.mx_CreateRoomDialog_name input').type(name);
     if (topic) {
         cy.get('.mx_CreateRoomDialog_topic input').type(topic);
     }
-    // do this to prevent https://github.com/vector-im/element-web/issues/22590, weirdly
-    // cy.get('.mx_CreateRoomDialog_name input').click();
-    // cy.wait(5000);
-
     cy.get('.mx_Dialog_primary').click();
-    //cy.get('.mx_RoomHeader_nametext').should('contain', data['name']);
-    return "room_created";
+    return await getRoomIdFromName(name);
+}
+
+function getRoomIdFromName(name: string): Promise<string> {
+    let resolve;
+    const promise: Promise<string> = new Promise(r => resolve = r);
+    openRoom(name);
+    cy.get(".mx_RightPanel_roomSummaryButton").click();
+    cy.get(".mx_RoomSummaryCard_icon_settings").click();
+    cy.get(`[data-testid='settings-tab-ROOM_ADVANCED_TAB']`).click();
+    cy.get(".mx_CopyableText").invoke("text").then(roomId => {
+        cy.get(".mx_Dialog_cancelButton").click();
+        cy.get("[data-test-id=base-card-close-button]").click();
+        resolve(roomId);
+    });
+    return promise;
 }
 
 export function createDm(userId: string): string {

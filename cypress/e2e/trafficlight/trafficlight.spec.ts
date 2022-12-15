@@ -106,7 +106,7 @@ function recurse() {
 
     function sendResponse(responseStatus) {
         let data;
-        if (typeof responseStatus == "string") {
+        if (typeof responseStatus === "string") {
             data = { response: responseStatus };
         } else {
             data = responseStatus;
@@ -121,15 +121,15 @@ function recurse() {
         const data: JSONValue = resp.body.data;
         const action: string = resp.body.action;
         cy.log('running action', action, JSON.stringify(data));
-        let result;
         try {
-            result = runAction(action, data);
+            cy.resolveFromPromise(runAction(action, data)).then(result => {
+                if (result) {
+                    sendResponse(result);
+                }
+            });
         } catch (e) {
             // Don't keep running if we encounter an error!
             return;
-        }
-        if (result) {
-            sendResponse(result);
         }
         if (action !== 'exit') {
             recurse();
@@ -137,7 +137,9 @@ function recurse() {
     });
 }
 
-function runAction(action: string, data: JSONValue): string | JSONValue | undefined {
+type ActionResult = string | JSONValue | undefined;
+
+function runAction(action: string, data: JSONValue): ActionResult | Promise<ActionResult> {
     switch (action) {
         // Auth
         case 'register':
