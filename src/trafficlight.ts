@@ -90,7 +90,7 @@ async function runCypress(trafficlightUrl: string, uuid: string, openMode: boole
     const cypressOptions = {
         headed: true,
         // @ts-ignore-next-line
-        exit: false,
+        exit: true,
         quiet: false,
         browser: 'chromium',
         spec: './cypress/e2e/trafficlight/trafficlight.spec.ts',
