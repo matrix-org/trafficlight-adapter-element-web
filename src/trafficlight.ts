@@ -88,11 +88,11 @@ async function uploadFile(trafficlightUrl: string, uuid: string, filename: strin
 
 async function runCypress(trafficlightUrl: string, uuid: string, openMode: boolean): Promise<boolean> {
     const cypressOptions = {
-        headed: true,
+        headed: false,
         // @ts-ignore-next-line
-        exit: false,
+        exit: true,
         quiet: false,
-        browser: 'chromium',
+        browser: 'chrome',
         spec: './cypress/e2e/trafficlight/trafficlight.spec.ts',
         env: {
             'TRAFFICLIGHT_URL': trafficlightUrl,
