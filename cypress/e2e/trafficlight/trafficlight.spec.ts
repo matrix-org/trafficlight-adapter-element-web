@@ -53,38 +53,6 @@ type JSONValue =
     | { [x: string]: JSONValue }
     | Array<JSONValue>;
 
-Cypress.on('uncaught:exception', (e, runnable) => {
-    console.log("uncaught exception", e.message);
-    const errorUrl = `${Cypress.env('TRAFFICLIGHT_URL') }/client/${ Cypress.env('TRAFFICLIGHT_UUID') }/error`;
-    const errorPath = e.stack?.split("\n")[0];
-    const body = JSON.stringify({
-        error: {
-            type: e.name,
-            details: e.message,
-            path: errorPath,
-        },
-    });
-    fetch(errorUrl, { method: "POST", body });
-    return false;
-});
-
-Cypress.on('fail', (e) => {
-    const errorUrl = `${Cypress.env('TRAFFICLIGHT_URL') }/client/${ Cypress.env('TRAFFICLIGHT_UUID') }/error`;
-    const errorPath = e.stack?.split("\n").slice(1).join("\n");
-    const body = JSON.stringify({
-        error: {
-            type: e.name,
-            details: e.message,
-            path: errorPath,
-        },
-    });
-    fetch(errorUrl, {
-        method: "post",
-        body,
-        headers: { 'Content-Type': 'application/json' },
-    });
-    throw e;
-});
 
 describe('traffic light client', () => {
     it('runs a trafficlight client once', () => {
