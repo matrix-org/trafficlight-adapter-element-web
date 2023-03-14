@@ -18,8 +18,6 @@ limitations under the License.
 
 /// <reference types='cypress' />
 
-import fetch from "node-fetch";
-
 import { login, logout, register } from "./actions/auth";
 import { advanceClock, clearIDBStorage, exit, idle, reload } from "./actions/browser";
 import {
@@ -52,7 +50,6 @@ type JSONValue =
     | boolean
     | { [x: string]: JSONValue }
     | Array<JSONValue>;
-
 
 describe('traffic light client', () => {
     it('runs a trafficlight client once', () => {
