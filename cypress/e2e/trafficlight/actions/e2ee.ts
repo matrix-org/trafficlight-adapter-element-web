@@ -78,6 +78,9 @@ export function enableKeyBackup(passphrase: string): string {
     // Classic flakiness fix
     cy.wait(500);
     cy.get(".mx_CreateSecretStorageDialog").contains("Continue").click();
+    // Wait for secrets to be completed and dismiss the confirmation screen
+    cy.wait(500);
+    cy.get(".mx_CreateSecretStorageDialog").contains("Done").click();
     return "key_backup_enabled";
 }
 
