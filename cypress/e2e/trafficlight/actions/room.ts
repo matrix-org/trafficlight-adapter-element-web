@@ -47,7 +47,7 @@ export function changeRoomHistoryVisibility(historyVisibility: string): string {
     // should be either "shared", "invited" or "joined"
     cy.get(`#historyVis-${historyVisibility}`).parents("label").click();
     cy.get(".mx_Dialog_cancelButton").click();
-    cy.get("[data-test-id=base-card-close-button]").click();
+    cy.get("[data-testid=base-card-close-button]").click();
     return "changed";
 }
 
